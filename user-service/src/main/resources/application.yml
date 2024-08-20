@@ -9,6 +9,13 @@ logging:
 server:
   port: 9082
 
+eureka:
+  client:
+    healthcheck:
+      enabled: true
+    serviceUrl:
+      defaultZone: http://${EUREKA_SERVER:localhost}:8761/eureka/
+
 management:
   endpoints:
     web:
@@ -16,3 +23,4 @@ management:
         include:
           - metrics
           - prometheus
+          - health

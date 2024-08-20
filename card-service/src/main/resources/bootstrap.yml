@@ -1,5 +1,4 @@
 spring:
-
   cloud:
     config:
-      uri: http://localhost:9888
+      uri: http://${CONFIG_SERVER:localhost}:9888

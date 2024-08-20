@@ -1,0 +1,111 @@
+version: '3.7'
+services:
+  user-service: &base_service
+    container_name: user-service
+    depends_on:
+      gateway-proxy:
+        condition: service_healthy
+    build:
+      args:
+        - SERVICE=user-service
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./user-service/target:/opt/service
+    ports:
+      - "9082:9082"
+    environment:
+      - EUREKA_SERVER=eureka-server
+      - CONFIG_SERVER=config-server
+
+
+  card-service:
+    <<: *base_service
+    container_name: card-service
+    build:
+      args:
+        - SERVICE=card-service
+    volumes:
+      - ./card-service/target:/opt/service
+    ports:
+      - "9080:9080"
+
+
+  fraud-service:
+    <<: *base_service
+    container_name: fraud-service
+    build:
+      args:
+        - SERVICE=fraud-verifier
+    volumes:
+      - ./fraud-verifier/target:/opt/service
+    ports:
+      - "9081:9081"
+
+
+  config-server:
+    container_name: config-server
+    build:
+      args:
+        - SERVICE=config-server
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./config-server/target:/opt/service
+    ports:
+      - "9888:9888"
+    healthcheck:
+      test: "curl --fail --silent localhost:9888/actuator/health | grep UP || exit 1"
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    environment:
+      - EUREKA_SERVER=eureka-server
+      - CONFIG_SERVER=config-server
+
+
+  eureka-server:
+    container_name: eureka-server
+    depends_on:
+      config-server:
+        condition: service_healthy
+    build:
+      args:
+        - SERVICE=eureka-server
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./eureka-server/target:/opt/service
+    ports:
+      - "8761:8761"
+    healthcheck:
+      test: "curl --fail --silent localhost:8761/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    environment:
+      - EUREKA_SERVER=eureka-server
+      - CONFIG_SERVER=config-server
+
+
+  gateway-proxy:
+    container_name: gateway-proxy
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    build:
+      args:
+        - SERVICE=gateway-proxy
+      dockerfile: ./Dockerfile
+    volumes:
+      - ./gateway-proxy/target:/opt/service
+    ports:
+      - "9083:9083"
+    healthcheck:
+      test: "curl --fail --silent localhost:9083/actuator/health | grep UP || exit 1"
+      interval: 20s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    environment:
+      - EUREKA_SERVER=eureka-server
+      - CONFIG_SERVER=config-server

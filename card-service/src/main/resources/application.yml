@@ -4,12 +4,22 @@ spring:
       active: production
     name: card-service
   config:
-    import: optional:configserver:http://localhost:9888
+    import: optional:configserver:http://${CONFIG_SERVER:localhost}config-server:9888
+
+eureka:
+  client:
+    healthcheck:
+      enabled: true
+    serviceUrl:
+      defaultZone: http://${EUREKA_SERVER:localhost}:8761/eureka/
+
 logging:
   level:
     org.springframework: info
+
 server:
   port: 9080
+
 management:
   endpoints:
     web:
@@ -19,3 +29,4 @@ management:
           - env
           - metrics
           - prometheus
+          - health

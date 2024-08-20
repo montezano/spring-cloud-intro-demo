@@ -86,3 +86,12 @@ in a `@Configuration` class
 ## Micrometer + Prometheus
 - HTTP traffic monitoring using Micrometer + Prometheus
 - Added a Micrometer's `Timer` to `VerificationServiceClient`
+
+# Running
+## Spring
+
+- Run the script `run_all.sh` under scripts directory
+
+# Docker
+
+- With docker engine running, execute the script `run_all.sh docker` under scripts directory
